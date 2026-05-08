@@ -1,0 +1,72 @@
+[
+  {
+    nama Aris Setiawan,
+    nim J0304211001,
+    jenis_kelamin Laki-laki,
+    prodi Teknologi Rekayasa Perangkat Lunak,
+    usia 20
+  },
+  {
+    nama Laras Safitri,
+    nim J0304211002,
+    jenis_kelamin Perempuan,
+    prodi Teknologi Rekayasa Perangkat Lunak,
+    usia 19
+  },
+  {
+    nama Dwi Cahyo,
+    nim J0304211003,
+    jenis_kelamin Laki-laki,
+    prodi Manajemen Informatika,
+    usia 21
+  },
+  {
+    nama Santi Rahayu,
+    nim J0304211004,
+    jenis_kelamin Perempuan,
+    prodi Teknologi Komputer,
+    usia 20
+  },
+  {
+    nama Bagus Pratama,
+    nim J0304211005,
+    jenis_kelamin Laki-laki,
+    prodi Teknologi Rekayasa Perangkat Lunak,
+    usia 22
+  },
+  {
+    nama Eka Wahyuni,
+    nim J0304211006,
+    jenis_kelamin Perempuan,
+    prodi Teknik Komputer,
+    usia 19
+  },
+  {
+    nama Fahmi Aziz,
+    nim J0304211007,
+    jenis_kelamin Laki-laki,
+    prodi Ilmu Komputer,
+    usia 20
+  },
+  {
+    nama Indah Permata,
+    nim J0304211008,
+    jenis_kelamin Perempuan,
+    prodi Manajemen Informatika,
+    usia 21
+  },
+  {
+    nama Rian Hidayat,
+    nim J0304211009,
+    jenis_kelamin Laki-laki,
+    prodi Teknologi Rekayasa Perangkat Lunak,
+    usia 20
+  },
+  {
+    nama Gita Lestari,
+    nim J0304211010,
+    jenis_kelamin Perempuan,
+    prodi Ilmu Komputer,
+    usia 19
+  }
+]
