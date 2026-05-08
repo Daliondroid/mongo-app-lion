@@ -1,71 +1,68 @@
 $(document).ready(function() {
-    var url = 'http://localhost:8000/api/mahasiswa/';
-    $.ajax({
-       url: url,
-       method: 'GET',
-       berforeSend: function() {
-           $('#mahasiswa-table').html('<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>');
-       },
-        success: function(data) {
-            var tableBody = $('#mahasiswa-table');
-            tableBody.empty();
-            $.each(data, function(index, mahasiswa) {
-                var row = '<tr data-id="' + encodeURIComponent(btoa(mahasiswa.id)) + '">' +
-                    '<td>' + mahasiswa.nim + '</td>' +
-                    '<td>' + mahasiswa.nama + '</td>' +
-                    '<td>' + mahasiswa.jenis_kelamin + '</td>' +
-                    '<td>' + mahasiswa.usia + '</td>' +
-                    '<td>' + mahasiswa.prodi.nama + '</td>' +
-                    '<td><button class="btn btn-warning btn-sm edit">Edit</button> <button class="btn btn-danger btn-sm delete">Hapus</button></td>' +
-                    '</tr>';
-                tableBody.append(row);
-            });
-            if (data.length === 0) {
-                tableBody.html('<tr><td colspan="6" class="text-center"><i class="fas fa-solid fa-triangle-exclamation"></i> Tidak ada data</td></tr>');
-            }
-        },
-        error: function(err) {
-            console.log(err)
-            $('#mahasiswa-table').html('<tr><td colspan="6" class="text-center"><i class="fas fa-solid fa-circle-xmark"></i> Gagal memuat data</td></tr>');
-        }      
-    });
-
-    $('#mahasiswa-table').on('click', '.delete', function() {
-        var row = $(this).closest('tr');
-        var id = decodeURIComponent(atob(row.data('id')));
-        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-            $.ajax({
-                url: url + id,
-                method: 'DELETE',
-                success: function() {                    
-                    row.remove();
-                },
-                error: function(err) {
-                    console.log(err);
-                    alert('Gagal menghapus data');
-                }
-            });
+    // Setup CSRF Token agar request POST/PUT/DELETE diizinkan oleh Laravel
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
-    $('#mahasiswa-table').on('click', '.edit', function() {
-        var row = $(this).closest('tr');
-        var id = decodeURIComponent(atob(row.data('id')));
+    var url = '/mahasiswa/';
+
+    // Reset form saat tombol tambah diklik
+    $('#add').click(function() {
+        $('#mahasiswaForm')[0].reset();
+        $('#id').val('');
+        $('#mahasiswaModalLabel').text('Tambah Mahasiswa');
+    });
+
+    // Simpan Data (Tambah dan Edit)
+    $('#mahasiswaForm').submit(function(e) {
+        e.preventDefault();
+        
+        var id = $('#id').val();
+        var formData = {
+            nim: $('#nim').val(),
+            nama: $('#nama').val(),
+            jenis_kelamin: $('#jenis_kelamin').val(),
+            usia: $('#usia').val(),
+            // Kirimkan string nama prodi saja agar tidak bentrok dengan data lama
+            prodi: $('#nama_prodi').val() 
+        };
+
+        var requestMethod = id ? 'PUT' : 'POST';
+        var requestUrl = id ? '/mahasiswa/' + id : '/mahasiswa';
+
+        $.ajax({
+            url: requestUrl,
+            method: requestMethod,
+            data: formData,
+            success: function(res) {
+                $('#mahasiswaModal').modal('hide');
+                location.reload(); 
+            },
+            error: function(err) {
+                console.log(err);
+                alert('Gagal menyimpan data. Cek console log.');
+            }
+        });
+    });
+
+    // Tampilkan Modal Edit beserta datanya
+    $('.btn-edit').click(function() {
+        var id = $(this).data('id');
 
         $.ajax({
             url: url + id,
             method: 'GET',
             success: function(data) {
+                $('#id').val(data._id);
                 $('#nim').val(data.nim);
                 $('#nama').val(data.nama);
                 $('#jenis_kelamin').val(data.jenis_kelamin);
                 $('#usia').val(data.usia);
-                $('#kode_prodi').val(data.prodi.kode);
-                $('#nama_prodi').val(data.prodi.nama);
+                $('#nama_prodi').val(data.prodi);
 
                 $('#mahasiswaModalLabel').text('Edit Mahasiswa');
-                $('#save').data('id', id);
-
                 $('#mahasiswaModal').modal('show');
             },
             error: function(err) {
@@ -75,63 +72,25 @@ $(document).ready(function() {
         });
     });
 
-    $('#add').click(function() {
-        $('#mahasiswa-form')[0].reset();
-        $('#mahasiswaModalLabel').text('Tambah Mahasiswa');
-        $('#save').data('id', '');
-    });
-
-    $('#mahasiswa-form').submit(function(e) {
-        e.preventDefault();
-        
-        var formData = {
-            nim: $('#nim').val(),
-            nama: $('#nama').val(),
-            jenis_kelamin: $('#jenis_kelamin').val(),
-            usia: $('#usia').val(),
-            prodi: {
-                kode: $('#kode_prodi').val(),
-                nama: $('#nama_prodi').val()
-            }
-        };
-
-        var id = $('#save').data('id');
-        if (id) {
+    // Hapus Data
+    $('.btn-delete').click(function() {
+        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            var id = $(this).data('id');
             $.ajax({
                 url: url + id,
-                method: 'PUT',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function() {
-                    $('#mahasiswaModal').modal('hide');
-                    $('#mahasiswa-form')[0].reset();
-                    $('#save').data('id', '');
+                method: 'DELETE',
+                success: function() {                    
                     location.reload();
                 },
                 error: function(err) {
                     console.log(err);
-                    alert('Gagal mengedit data');
-                }
-            });
-        } else {
-            $.ajax({
-                url: url,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function() {
-                    $('#mahasiswaModal').modal('hide');
-                    $('#mahasiswa-form')[0].reset();
-                    location.reload();
-                },
-                error: function(err) {
-                    console.log(err);
-                    alert('Gagal menambah data');
+                    alert('Gagal menghapus data');
                 }
             });
         }
     });
 
+    // Export PDF
     $('#pdf').click(function() {
         const btn = $(this);
         const originalText = btn.html();
@@ -164,16 +123,16 @@ $(document).ready(function() {
                     </thead>
                     <tbody>`;
 
-        $('#mahasiswa-table tr').each(function() {
+        $('#mahasiswaData tr').each(function() {
             const cells = $(this).find('td');
             
             if (cells.length > 1) {
                 contentHTML += '<tr>';
-                contentHTML += '<td>' + $(cells[0]).text() + '</td>'; // NIM
-                contentHTML += '<td>' + $(cells[1]).text() + '</td>'; // Nama
-                contentHTML += '<td>' + $(cells[2]).text() + '</td>'; // Jenis Kelamin
-                contentHTML += '<td>' + $(cells[3]).text() + '</td>'; // Usia
-                contentHTML += '<td>' + $(cells[4]).text() + '</td>'; // Prodi
+                contentHTML += '<td>' + $(cells[0]).text() + '</td>';
+                contentHTML += '<td>' + $(cells[1]).text() + '</td>';
+                contentHTML += '<td>' + $(cells[2]).text() + '</td>';
+                contentHTML += '<td>' + $(cells[3]).text() + '</td>';
+                contentHTML += '<td>' + $(cells[4]).text() + '</td>';
                 contentHTML += '</tr>';
             }
         });
@@ -188,12 +147,17 @@ $(document).ready(function() {
         })
         .then(response => response.json())
         .then(json => {
-            console.log(json);
             window.location = json.file;
+            btn.html(originalText).prop('disabled', false);
+        })
+        .catch(err => {
+            alert('Gagal membuat PDF');
+            btn.html(originalText).prop('disabled', false);
         });
+    });
 
-        $('#excel').click(function() {
-            window.location = url + 'mahasiswa/export_excel'
-        });
+    // Export Excel (Dikeluarkan dari block PDF)
+    $('#excel').click(function() {
+        window.location = url + 'export_excel';
     });
 });

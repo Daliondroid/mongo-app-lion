@@ -15,38 +15,34 @@ class MahasiswaController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi input
+        $request->validate([
+            'nama' => 'required',
+            'nim' => 'required|unique:mahasiswa,nim',
+            'jenis_kelamin' => 'required',
+            'usia' => 'required|numeric',
+            'prodi' => 'required',
+        ]);
+
         $mahasiswa = Mahasiswa::create($request->all());
-        return response()->json($mahasiswa, 201);
+        return response()->json(['message' => 'Data berhasil disimpan', 'data' => $mahasiswa]);
     }
 
     public function show($id)
     {
-        $mahasiswa = Mahasiswa::find($id);
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Mahasiswa not found'], 404);
-        }
-        return response()->json($mahasiswa);
+        return response()->json(Mahasiswa::find($id));
     }
 
     public function update(Request $request, $id)
     {
         $mahasiswa = Mahasiswa::find($id);
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Mahasiswa not found'], 404);
-        }
-
         $mahasiswa->update($request->all());
-        return response()->json($mahasiswa);
+        return response()->json(['message' => 'Data berhasil diupdate']);
     }
 
     public function destroy($id)
     {
-        $mahasiswa = Mahasiswa::find($id);
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Mahasiswa not found'], 404);
-        }
-
-        $mahasiswa->delete();
-        return response()->json(['message' => 'Mahasiswa deleted successfully']);
+        Mahasiswa::destroy($id);
+        return response()->json(['message' => 'Data berhasil dihapus']);
     }
 }

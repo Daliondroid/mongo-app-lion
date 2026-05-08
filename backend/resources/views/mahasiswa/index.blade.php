@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Mahasiswa</title>
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     
@@ -35,7 +36,7 @@
                     <td>{{ $mhs->nama }}</td>
                     <td>{{ $mhs->jenis_kelamin }}</td>
                     <td>{{ $mhs->usia }}</td>
-                    <td>{{ $mhs->prodi }}</td>
+                    <td>{{ is_string($mhs->prodi) ? $mhs->prodi : ($mhs->prodi['nama'] ?? '-') }}</td>
                     <td>
                         <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $mhs->_id }}"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-danger btn-sm btn-delete" data-id="{{ $mhs->_id }}"><i class="fas fa-trash"></i></button>
