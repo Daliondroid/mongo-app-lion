@@ -49,13 +49,15 @@ $(document).ready(function() {
 
     // Tampilkan Modal Edit beserta datanya
     $('.btn-edit').click(function() {
-        var id = $(this).data('id');
+        var id = $(this).data('id'); // ID sudah berhasil ditangkap di sini
 
         $.ajax({
             url: url + id,
             method: 'GET',
             success: function(data) {
-                $('#id').val(data._id);
+                // PERBAIKAN: Gunakan variabel id secara langsung
+                $('#id').val(id); 
+                
                 $('#nim').val(data.nim);
                 $('#nama').val(data.nama);
                 $('#jenis_kelamin').val(data.jenis_kelamin);
@@ -92,72 +94,11 @@ $(document).ready(function() {
 
     // Export PDF
     $('#pdf').click(function() {
-        const btn = $(this);
-        const originalText = btn.html();
-        btn.html('<i class="fas fa-spinner fa-spin"></i> Loading...').prop('disabled', true);
-
-        const data = new FormData();
-        
-        let contentHTML = `
-            <html>
-            <head>
-                <style>
-                    body { font-family: sans-serif; }
-                    h1 { text-align: center; color: #333; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-                    th { background-color: #f2f2f2; }
-                </style>
-            </head>
-            <body>
-                <h1>Daftar Mahasiswa</h1>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NIM</th>
-                            <th>Nama</th>
-                            <th>Jenis Kelamin</th>
-                            <th>Usia</th>
-                            <th>Prodi</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-
-        $('#mahasiswaData tr').each(function() {
-            const cells = $(this).find('td');
-            
-            if (cells.length > 1) {
-                contentHTML += '<tr>';
-                contentHTML += '<td>' + $(cells[0]).text() + '</td>';
-                contentHTML += '<td>' + $(cells[1]).text() + '</td>';
-                contentHTML += '<td>' + $(cells[2]).text() + '</td>';
-                contentHTML += '<td>' + $(cells[3]).text() + '</td>';
-                contentHTML += '<td>' + $(cells[4]).text() + '</td>';
-                contentHTML += '</tr>';
-            }
-        });
-
-        contentHTML += '</tbody></table></body></html>';
-        data.append('html', contentHTML);
-
-        fetch('https://apdf.io/api/pdf/file/create', {
-            headers: {'Authorization': 'Bearer hX8ckdkFd2YIvcLP2LlO8kKxGJ1FzoNMJh6efRMi423ad4d6'},
-            method: 'POST',
-            body: data
-        })
-        .then(response => response.json())
-        .then(json => {
-            window.location = json.file;
-            btn.html(originalText).prop('disabled', false);
-        })
-        .catch(err => {
-            alert('Gagal membuat PDF');
-            btn.html(originalText).prop('disabled', false);
-        });
+        window.open('/mahasiswa/export-pdf', '_blank');
     });
 
     // Export Excel (Dikeluarkan dari block PDF)
     $('#excel').click(function() {
-        window.location = url + 'export_excel';
+        window.location.href = '/mahasiswa/export-excel';
     });
 });
