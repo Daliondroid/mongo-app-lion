@@ -23,7 +23,7 @@
                 <th>Program Studi</th>
             </tr>
         </thead>
-        <tbody id="mahasiswaData">
+        <tbody>
             @foreach($mahasiswa as $mhs)
             <tr>
                 <td>{{ $mhs->nim }}</td>
@@ -31,21 +31,6 @@
                 <td>{{ $mhs->jenis_kelamin }}</td>
                 <td>{{ $mhs->usia }}</td>
                 <td>{{ is_string($mhs->prodi) ? $mhs->prodi : ($mhs->prodi['nama'] ?? '-') }}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $mhs->_id }}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm btn-delete" data-id="{{ $mhs->_id }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    
-                    <a href="{{ url('/mahasiswa/'.$mhs->_id.'/export-pdf-single') }}" class="btn btn-secondary btn-sm" target="_blank" title="Export PDF Data Ini">
-                        <i class="fas fa-file-pdf"></i>
-                    </a>
-                    <a href="{{ url('/mahasiswa/'.$mhs->_id.'/export-excel-single') }}" class="btn btn-info btn-sm" title="Export Excel Data Ini">
-                        <i class="fas fa-file-excel"></i>
-                    </a>
-                </td>
             </tr>
             @endforeach
         </tbody>
