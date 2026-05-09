@@ -7,6 +7,9 @@ use App\Models\Mahasiswa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class MahasiswaController extends Controller
 {
@@ -65,9 +68,10 @@ class MahasiswaController extends Controller
     {
         // Mengambil satu data saja, masukkan ke array agar bisa dipakai di view yang sama
         $mahasiswa = [Mahasiswa::find($id)];
+        $mhs = Mahasiswa::find($id);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('mahasiswa.pdf', compact('mahasiswa'));
-        return $pdf->download('Data_Mahasiswa_'.$id.'.pdf');
+        return $pdf->download('Data_Mahasiswa_'.$mhs->nim.'.pdf');
     }
     
     public function exportExcel()
@@ -76,20 +80,29 @@ class MahasiswaController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Membuat Header Tabel
-        $sheet->setCellValue('A1', 'NIM');
-        $sheet->setCellValue('B1', 'Nama');
-        $sheet->setCellValue('C1', 'Jenis Kelamin');
-        $sheet->setCellValue('D1', 'Usia');
-        $sheet->setCellValue('E1', 'Program Studi');
+        // 1. Set Header
+        $headers = ['NIM', 'Nama', 'Jenis Kelamin', 'Usia', 'Program Studi'];
+        $sheet->fromArray($headers, NULL, 'A1');
 
-        // Mengatur Style Bold untuk Header
-        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+        // 2. Styling Header (Warna Background & Teks Bold)
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4'], // Warna Biru Profesional
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 
-        // Mengisi Data dari MongoDB
+        // 3. Isi Data
         $row = 2;
         foreach ($mahasiswa as $mhs) {
-            // Logika defensive untuk prodi (string vs array)
             $prodi = is_string($mhs->prodi) ? $mhs->prodi : ($mhs->prodi['nama'] ?? '-');
 
             $sheet->setCellValue('A' . $row, $mhs->nim);
@@ -100,7 +113,28 @@ class MahasiswaController extends Controller
             $row++;
         }
 
-        // Auto-size kolom agar rapi
+        // 4. Styling Tabel (Borders & Alignment)
+        $lastRow = $row - 1;
+        $tableRange = 'A1:E' . $lastRow;
+        
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+            'alignment' => [
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle($tableRange)->applyFromArray($styleArray);
+
+        // Mengetengahkan kolom NIM, Jenis Kelamin, dan Usia
+        $sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:D'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // 5. Auto-size kolom
         foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
@@ -116,6 +150,7 @@ class MahasiswaController extends Controller
         $writer->save('php://output');
         exit;
     }
+
 
     public function exportExcelSingle($id)
     {

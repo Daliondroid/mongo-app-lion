@@ -40,11 +40,11 @@
                     <td>
                         <button class="btn btn-warning btn-sm btn-edit" data-id="{{ $mhs->_id }}"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-danger btn-sm btn-delete" data-id="{{ $mhs->_id }}"><i class="fas fa-trash"></i></button>
-                        
-                        <a href="{{ url('/mahasiswa/'.$mhs->_id.'/export-pdf-single') }}" class="btn btn-secondary btn-sm" target="_blank" title="Export PDF">
+                        <span class="mx-1 text-muted">|</span>
+                        <a href="{{ url('/api/mahasiswa/'.$mhs->_id.'/export-pdf-single') }}" class="btn btn-secondary btn-sm" target="_blank">
                             <i class="fas fa-file-pdf"></i>
                         </a>
-                        <a href="{{ url('/mahasiswa/'.$mhs->_id.'/export-excel-single') }}" class="btn btn-info btn-sm" title="Export Excel">
+                        <a href="{{ url('/api/mahasiswa/'.$mhs->_id.'/export-excel-single') }}" class="btn btn-info btn-sm">
                             <i class="fas fa-file-excel"></i>
                         </a>
                     </td>

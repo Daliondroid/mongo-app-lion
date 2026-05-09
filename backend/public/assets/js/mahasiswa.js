@@ -92,13 +92,13 @@ $(document).ready(function() {
         }
     });
 
-    // Export PDF
+    // Export PDF Massal
     $('#pdf').click(function() {
-        window.open('/mahasiswa/export-pdf', '_blank');
+        window.open('/api/mahasiswa/export-pdf', '_blank');
     });
 
-    // Export Excel (Dikeluarkan dari block PDF)
+    // Export Excel Massal
     $('#excel').click(function() {
-        window.location.href = '/mahasiswa/export-excel';
+        window.location.href = '/api/mahasiswa/export-excel';
     });
 });
