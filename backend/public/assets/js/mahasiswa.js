@@ -23,7 +23,8 @@ $(document).ready(function() {
 
                 $.each(data, function(index, mhs) {
                     var prodi = typeof mhs.prodi === 'object' ? (mhs.prodi.nama || '-') : mhs.prodi;
-                    
+                    let mahasiswaId = mhs.id || mhs._id;
+
                     var row = '<tr>' +
                         '<td>' + mhs.nim + '</td>' +
                         '<td>' + mhs.nama + '</td>' +
@@ -31,11 +32,13 @@ $(document).ready(function() {
                         '<td>' + mhs.usia + '</td>' +
                         '<td>' + prodi + '</td>' +
                         '<td>' +
-                            '<button class="btn btn-warning btn-sm btn-edit" data-id="' + mhs._id + '"><i class="fas fa-edit"></i></button> ' +
-                            '<button class="btn btn-danger btn-sm btn-delete" data-id="' + mhs._id + '"><i class="fas fa-trash"></i></button> ' +
+                            '<button class="btn btn-warning btn-sm btn-edit" data-id="' + mahasiswaId + '"><i class="fas fa-edit"></i></button> ' +
+                            '<button class="btn btn-danger btn-sm btn-delete" data-id="' + mahasiswaId + '"><i class="fas fa-trash"></i></button> ' +
                             '<span class="mx-1 text-muted">|</span> ' +
-                            '<a href="/api/mahasiswa/' + mhs._id + '/export-pdf-single" class="btn btn-secondary btn-sm" target="_blank" title="Export PDF"><i class="fas fa-file-pdf"></i></a> ' +
-                            '<a href="/api/mahasiswa/' + mhs._id + '/export-excel-single" class="btn btn-info btn-sm" title="Export Excel"><i class="fas fa-file-excel"></i></a>' +
+                            '<a href="/api/mahasiswa/' + mahasiswaId + 
+                            '/export-pdf-single" class="btn btn-secondary btn-sm" target="_blank" title="Export PDF"><i class="fas fa-file-pdf"></i></a> ' +
+                            '<a href="/api/mahasiswa/' + mahasiswaId + 
+                            '/export-excel-single" class="btn btn-info btn-sm" title="Export Excel"><i class="fas fa-file-excel"></i></a>' +
                         '</td>' +
                     '</tr>';
                     tableBody.append(row);

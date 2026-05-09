@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Mahasiswa;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,7 +19,6 @@ class MahasiswaController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input
         $request->validate([
             'nama' => 'required',
             'nim' => 'required|unique:mahasiswa,nim',
@@ -66,10 +63,14 @@ class MahasiswaController extends Controller
 
     public function exportPdfSingle($id)
     {
-        // Mengambil satu data saja, masukkan ke array agar bisa dipakai di view yang sama
-        $mahasiswa = [Mahasiswa::find($id)];
         $mhs = Mahasiswa::find($id);
         
+        // Proteksi jika data null
+        if (!$mhs) {
+            return response()->json(['message' => 'Mahasiswa tidak ditemukan'], 404);
+        }
+
+        $mahasiswa = [$mhs];
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('mahasiswa.pdf', compact('mahasiswa'));
         return $pdf->download('Data_Mahasiswa_'.$mhs->nim.'.pdf');
     }
@@ -155,19 +156,36 @@ class MahasiswaController extends Controller
     public function exportExcelSingle($id)
     {
         $mhs = Mahasiswa::find($id);
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
 
-        // Header
+        // Proteksi jika data null
+        if (!$mhs) {
+            return response()->json(['message' => 'Mahasiswa tidak ditemukan'], 404);
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // 1. SET HEADER (Wajib ada agar tidak kosong)
         $headers = ['NIM', 'Nama', 'Jenis Kelamin', 'Usia', 'Program Studi'];
         $sheet->fromArray($headers, NULL, 'A1');
 
-        // Styling Header
-        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:E1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('4472C4');
-        $sheet->getStyle('A1:E1')->getFont()->getColor()->setRGB('FFFFFF');
-
-        // Isi Data Tunggal
+        // 2. STYLING HEADER (Agar sama cantiknya dengan export massal)
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        
+        // 3. ISI DATA TUNGGAL
         $prodi = is_string($mhs->prodi) ? $mhs->prodi : ($mhs->prodi['nama'] ?? '-');
         $sheet->setCellValue('A2', $mhs->nim);
         $sheet->setCellValue('B2', $mhs->nama);
@@ -175,17 +193,37 @@ class MahasiswaController extends Controller
         $sheet->setCellValue('D2', $mhs->usia);
         $sheet->setCellValue('E2', $prodi);
 
-        // Border & Alignment
-        $sheet->getStyle('A1:E2')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        // 4. BORDER & ALIGNMENT DATA
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
+            'alignment' => [
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle('A1:E2')->applyFromArray($styleArray);
+
+        // Mengetengahkan kolom NIM, Jenis Kelamin, dan Usia
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('C2:D2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // 5. AUTO-SIZE KOLOM
         foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        // PROSES DOWNLOAD
+        $writer = new Xlsx($spreadsheet);
         $fileName = 'Data_Mahasiswa_'.$mhs->nim.'.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $fileName . '"');
+        header('Cache-Control: max-age=0');
+        
         $writer->save('php://output');
         exit;
     }
